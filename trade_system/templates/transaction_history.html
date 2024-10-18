@@ -1,0 +1,156 @@
+{% load static %}
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{% static 'dashboard/styles.css'%}">
+    <title>Transaction History - Traders@BPHC</title>
+</head>
+
+<body>
+    <!-- Navbar Section -->
+    <section>
+        <nav class="relative navbar">
+            <div class="max-w-7xl mx-auto px-4 flex items-center">
+                <div id="logo" class="flex-shrink-0">
+                    <a href="{% url 'transaction_history' %}" class="text-white text-xl lg:text-2xl font-bold mr-3">{{ player.user_code }}</a>
+                </div>
+                <div class="flex-1">
+                    <div class="flex justify-between items-center py-5">
+                        <div class="md:hidden">
+                            <button id="menu-btn" class="text-white focus:outline-none cursor-pointer">
+                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 6h16M4 12h16M4 18h16"></path>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <ul id="menu"
+                            class="hidden md:flex space-x-10 text-white text-xl lg:text-2xl font-bold justify-center w-full">
+                            <li><a href="{% url 'dashboard' %}" class="hover:text-white transition">HOME</a></li>
+                            <li><a href="{% url 'portfolio' %}" class="hover:text-white transition">PORTFOLIO</a></li>
+                            <li><a href="{% url 'pending_requests' %}" class="hover:text-white transition">INCOMING REQUESTS</a></li>
+                            <li><a href="{% url 'news' %}" class="hover:text-white transition">LATEST NEWS</a></li>
+                            <li>
+                                <form action="{% url 'logout' %}" method="post">
+                                    {% csrf_token %}
+                                    <button class="hover:text-white transition" style="color: white; font-size: 1.5rem;"
+                                        type="submit">LOGOUT</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div id="mobile-menu"
+                class="md:hidden fixed inset-0 bg-black bg-opacity-100 text-#65B5EB text-2xl font-bold z-50 flex flex-col items-center justify-start pt-10 scale-0 transition-transform duration-500 ease-in-out">
+                <button id="close-menu-btn" class="absolute top-5 right-5 text-white focus:outline-none cursor-pointer">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+
+                <ul class="w-full">
+                    <li class="first:mt-0 border-b border-white w-full text-center py-4">
+                        <a href="{% url 'dashboard' %}" class="hover:text-white transition">HOME</a>
+                    </li>
+                    <li class="border-b border-white w-full text-center py-4">
+                        <a href="{% url 'portfolio' %}" class="hover:text-white transition">PORTFOLIO</a>
+                    </li>
+                    <li class="border-b border-white w-full text-center py-4">
+                        <a href="{% url 'pending_requests' %}" class="hover:text-white transition">INCOMING REQUESTS</a>
+                    </li>
+                    <li class="border-b border-white w-full text-center py-4">
+                        <a href="{% url 'news' %}" class="hover:text-white transition">LATEST NEWS</a>
+                    </li>
+                    <li>
+                        <form action="{% url 'logout' %}" method="post">
+                            {% csrf_token %}
+                            <button class="hover:text-white transition" style="color: white; font-size: 1.25rem;"
+                                type="submit">LOGOUT</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </section>
+
+    <!-- Transaction History Section -->
+    <section class="dashboard">
+        <div class="bg-white shadow-lg rounded-lg p-6 text-center mb-4">
+            <h2 class="text-3xl font-semibold text-gray-800 mb-4">Transaction History</h2>
+
+            <div class="overflow-x-auto">
+                <table class="min-w-full table-auto bg-white shadow-md rounded-lg">
+                    <thead class="bg-gray-200">
+                        <tr>
+                            <th class="px-4 py-2">Time</th>
+                            <th class="px-4 py-2">Action</th>
+                            <th class="px-4 py-2">Stock</th>
+                            <th class="px-4 py-2">Quantity</th>
+                            <th class="px-4 py-2">Price</th>
+                            <th class="px-4 py-2">Sender</th>
+                            <th class="px-4 py-2">Receiver</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transaction in transactions %}
+                        <tr class="bg-gray-100 hover:bg-gray-200">
+                            <td class="border px-4 py-2">{{ transaction.accepted_at|date:"H:i:s" }}</td>
+                            <td class="border px-4 py-2">{{ transaction.get_action_display }}</td>
+                            <td class="border px-4 py-2">{{ transaction.stock.stock_name }}</td>
+                            <td class="border px-4 py-2">{{ transaction.quantity }}</td>
+                            <td class="border px-4 py-2">{{ transaction.price }}</td>
+                            <td class="border px-4 py-2">{{ transaction.sender.user_code }}</td>
+                            <td class="border px-4 py-2">{{ transaction.receiver.user_code }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-gray-500 py-4">No transactions found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Select the necessary elements
+        const menuBtn = document.getElementById('menu-btn');
+        const closeMenuBtn = document.getElementById('close-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        // Toggle the mobile menu visibility
+        menuBtn.addEventListener('click', () => {
+            mobileMenu.classList.add('show');
+            menuBtn.classList.add('menu-btn-open');
+        });
+
+        // Close the mobile menu
+        closeMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.remove('show');
+            menuBtn.classList.remove('menu-btn-open');
+        });
+
+        // Optional: Close the menu when clicking outside of it
+        document.addEventListener('click', (event) => {
+            if (!mobileMenu.contains(event.target) && !menuBtn.contains(event.target)) {
+                mobileMenu.classList.remove('show');
+                menuBtn.classList.remove('menu-btn-open');
+            }
+        });
+    </script>
+</body>
+
+</html>

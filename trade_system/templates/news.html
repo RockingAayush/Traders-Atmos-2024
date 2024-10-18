@@ -1,0 +1,125 @@
+{% load static %}
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'news/styles.css' %}">
+    <title>Latest News | Traders@BPHC</title>
+</head>
+
+<body class="bg-white text-gray-900 font-poppins">
+    <!-- Navbar Section -->
+    <section>
+        <nav class="relative navbar bg-black text-white">
+            <div class="max-w-7xl mx-auto px-4 flex items-center justify-between">
+                <!-- Left side: User Code -->
+                <div id="logo" class="flex-shrink-0">
+                    <a href="{% url 'news' %}" class="text-white text-xl lg:text-2xl font-bold mr-3">{{ user_code }}</a>
+                </div>
+
+                <!-- Right side: Navigation links -->
+                <div class="flex-1">
+                    <div class="flex justify-between items-center py-5">
+                        <div class="md:hidden">
+                            <button id="menu-btn" class="text-white focus:outline-none cursor-pointer">
+                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <!-- Menu for desktop -->
+                        <ul id="menu" class="hidden md:flex space-x-10 text-white text-xl lg:text-2xl font-bold justify-center w-full">
+                            <li><a href="{% url 'dashboard' %}" class="hover:text-white transition">HOME</a></li>
+                            <li><a href="{% url 'portfolio' %}" class="hover:text-white transition">PORTFOLIO</a></li>
+                            <li><a href="{% url 'pending_requests' %}" class="hover:text-white transition">INCOMING REQUESTS</a></li>
+                            <li><a href="{% url 'transaction_history' %}" class="hover:text-white transition">HISTORY</a></li>
+                            <li>
+                                <form action="{% url 'logout' %}" method="post">
+                                    {% csrf_token %}
+                                    <button class="hover:text-white transition" style="color: white; font-size: 1.5rem;" type="submit">LOGOUT</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile Menu -->
+            <div id="mobile-menu" class="md:hidden fixed inset-0 bg-black bg-opacity-100 text-#65B5EB text-2xl font-bold z-50 flex flex-col items-center justify-start pt-10 scale-0 transition-transform duration-500 ease-in-out">
+                <button id="close-menu-btn" class="absolute top-5 right-5 text-white focus:outline-none cursor-pointer">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+
+                <ul class="w-full">
+                    <li class="border-b border-white w-full text-center py-4"><a href="{% url 'dashboard' %}" class="hover:text-white transition">HOME</a></li>
+                    <li class="border-b border-white w-full text-center py-4"><a href="{% url 'portfolio' %}" class="hover:text-white transition">PORTFOLIO</a></li>
+                    <li class="border-b border-white w-full text-center py-4"><a href="{% url 'pending_requests' %}" class="hover:text-white transition">INCOMING REQUESTS</a></li>
+                    <li class="border-b border-white w-full text-center py-4"><a href="{% url 'transaction_history' %}" class="hover:text-white transition">HISTORY</a></li>
+                    <li class="border-b border-white w-full text-center py-4">
+                        <form action="{% url 'logout' %}" method="post">
+                            {% csrf_token %}
+                            <button class="hover:text-white transition" style="color: white; font-size: 1.25rem;" type="submit">LOGOUT</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </section>
+
+    <!-- News Section -->
+    <section class="news mt-10">
+        <div class="max-w-7xl mx-auto px-4">
+            <h1 class="text-3xl lg:text-4xl font-bold text-center mb-8">Latest News</h1>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {% for news_item in news %}
+                <div class="bg-white shadow-md rounded-lg p-6">
+                    <!-- Timing -->
+                    <div class="text-gray-500 text-sm">{{ news_item.time|date:"H:i" }}</div>
+
+                    <!-- Bold Header -->
+                    <h2 class="font-bold text-lg text-gray-900 mb-2">{{ news_item.title }}</h2>
+
+                    <!-- Small Paragraph -->
+                    <p class="text-gray-600 text-sm">{{ news_item.news_text }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- JavaScript for Menu Toggling -->
+    <script>
+        const menuBtn = document.getElementById('menu-btn');
+        const closeMenuBtn = document.getElementById('close-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        menuBtn.addEventListener('click', () => {
+            mobileMenu.classList.add('show');
+            menuBtn.classList.add('menu-btn-open');
+        });
+
+        closeMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.remove('show');
+            menuBtn.classList.remove('menu-btn-open');
+        });
+
+        document.addEventListener('click', (event) => {
+            if (!mobileMenu.contains(event.target) && !menuBtn.contains(event.target)) {
+                mobileMenu.classList.remove('show');
+                menuBtn.classList.remove('menu-btn-open');
+            }
+        });
+    </script>
+</body>
+
+</html>
