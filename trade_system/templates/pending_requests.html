@@ -9,7 +9,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="{% static 'dashboard/styles.css'%}">
-    <title>Pending Requests - Traders@BPHC</title>
+    <title>Requests - Traders@BPHC</title>
 </head>
 
 <body>
@@ -36,7 +36,8 @@
                             class="hidden md:flex space-x-10 text-white text-xl lg:text-2xl font-bold justify-center w-full">
                             <li><a href="{% url 'dashboard' %}" class="hover:text-white transition">HOME</a></li>
                             <li><a href="{% url 'portfolio' %}" class="hover:text-white transition">PORTFOLIO</a></li>
-                            <li><a href="{% url 'transaction_history' %}" class="hover:text-white transition">HISTORY</a></li>
+                            <li><a href="{% url 'transaction_history' %}"
+                                    class="hover:text-white transition">HISTORY</a></li>
                             <li><a href="{% url 'news' %}" class="hover:text-white transition">LATEST NEWS</a></li>
                             <li>
                                 <form action="{% url 'logout' %}" method="post">
@@ -55,8 +56,8 @@
                 <button id="close-menu-btn" class="absolute top-5 right-5 text-white focus:outline-none cursor-pointer">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                         xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
                     </svg>
                 </button>
 
@@ -87,35 +88,71 @@
 
     <!-- Pending Transaction Requests Section -->
     <section class="dashboard max-w-7xl mx-auto px-4 py-10">
-        <h2 class="text-3xl font-semibold text-center text-gray-800 mb-6">Pending Transaction Requests</h2>
+        <h2 class="text-3xl font-semibold text-center text-gray-800 mb-6">Transaction Requests</h2>
 
         <div class="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
             {% if pending_transactions %}
-                {% for transaction in pending_transactions %}
-                <div class="bg-white shadow-md rounded-lg p-6 hover:shadow-lg transition-shadow duration-300">
-                    <h3 class="text-xl font-bold text-gray-700 mb-4">{{ transaction.stock.stock_name }}</h3>
-                    <p class="text-gray-600"><strong>Sender:</strong> {{ transaction.sender.user_code }}</p>
-                    <p class="text-gray-600"><strong>Action:</strong> {{ transaction.action }}</p>
-                    <p class="text-gray-600"><strong>Quantity:</strong> {{ transaction.quantity }}</p>
-                    <p class="text-gray-600"><strong>Price:</strong> ₹{{ transaction.price }}</p>
-                    <div class="mt-4 flex justify-between items-center">
-                        <form action="{% url 'accept_transaction' transaction.id %}" method="POST">
-                            {% csrf_token %}
-                            <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">
-                                Accept
-                            </button>
-                        </form>
-                        <form action="{% url 'reject_transaction' transaction.id %}" method="POST">
-                            {% csrf_token %}
-                            <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">
-                                Reject
-                            </button>
-                        </form>
-                    </div>
+            {% for transaction in pending_transactions %}
+            <div class="bg-white shadow-lg rounded-xl p-6 hover:shadow-xl transition-shadow duration-300 border border-gray-200 relative">
+                <!-- Stock Name -->
+                <h3 class="text-2xl font-bold text-black-600 mb-3">
+                    {{ transaction.stock.stock_name }}
+                </h3>
+            
+                <!-- Transaction Details -->
+                <div class="text-gray-700 space-y-2">
+                    <!-- Sender Detail -->
+                    <p class="font-semibold text-gray-600">
+                        Sender: <span class="ml-2 text-gray-900">{{ transaction.sender.user_code }}</span>
+                    </p>
+            
+                    <!-- Action Detail with Badge -->
+                    <p class="font-semibold text-gray-600">
+                        Action: 
+                        <span class="ml-2">
+                            <b class="px-2 py-1 rounded-full text-sm 
+                            {% if transaction.action == 'BUY' %} bg-green-100 text-green-600 {% else %} bg-red-100 text-red-600 {% endif %}">
+                                {{ transaction.action }}
+                            </b>
+                        </span>
+                    </p>
+            
+                    <!-- Quantity -->
+                    <p class="font-semibold text-gray-600">
+                        Quantity: <span class="ml-2 text-gray-900">{{ transaction.quantity }}</span>
+                    </p>
+            
+                    <!-- Price -->
+                    <p class="font-semibold text-gray-600">
+                        Price: <span class="ml-2 text-gray-900">₹ {{ transaction.price }}</span>
+                    </p>
                 </div>
-                {% endfor %}
+            
+                <!-- Divider Line -->
+                <div class="my-4 border-t border-gray-300"></div>
+            
+                <!-- Action Buttons -->
+                <div class="mt-6 flex justify-between items-center space-x-4">
+                    <form action="{% url 'accept_transaction' transaction.id %}" method="POST" class="flex-1">
+                        {% csrf_token %}
+                        <button type="submit" class="w-full bg-green-500 text-white font-medium px-4 py-2 rounded-lg hover:bg-green-600 transition-all duration-200">
+                            Accept
+                        </button>
+                    </form>
+                    
+                    <form action="{% url 'reject_transaction' transaction.id %}" method="POST" class="flex-1">
+                        {% csrf_token %}
+                        <button type="submit" class="w-full bg-red-500 text-white font-medium px-4 py-2 rounded-lg hover:bg-red-600 transition-all duration-200">
+                            Reject
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+
+            {% endfor %}
             {% else %}
-                <p class="text-center text-gray-500 col-span-3">No pending transaction requests.</p>
+            <p class="text-center text-gray-500 col-span-3">No pending transaction requests.</p>
             {% endif %}
         </div>
     </section>

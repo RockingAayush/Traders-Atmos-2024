@@ -40,7 +40,7 @@ def dashboard(request):
 @login_required(login_url='/login/')
 def news_page(request):
     player = Player.objects.get(user=request.user)
-    news = News.objects.all()
+    news = News.objects.all().order_by('-time')
     context = {
         'news': news,
         'user_code': player.user_code,
@@ -386,6 +386,7 @@ def maintenance_page(request):
     # Render the maintenance page if maintenance mode is still on
     return render(request, 'maintenance.html')
 
+# Leaderboard
 def leaderboard_view(request):
     leaderboard = Leaderboard.objects.all().order_by('-net_worth')  # Sort by net worth
     return render(request, 'leaderboard.html', {'leaderboard': leaderboard})
