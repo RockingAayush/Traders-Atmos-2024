@@ -11,9 +11,14 @@ body{
 #mobile-menu {
     transform: translateX(-100%);
     transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
-    height: 100%; /* Set mobile menu height to 100% */
-    width: 100%; /* Set mobile menu width to 70% */
-
+    position: fixed; /* Ensures the menu is fixed to the viewport */
+    top: 0; /* Aligns the menu to the top */
+    right: 0; /* Aligns the menu to the right */
+    width: 100%; /* Takes full width */
+    height: 100%; /* Takes full height */
+    background-color: rgba(0, 0, 0, 1); /* Background color with opacity */
+    z-index: 50; /* Ensures it is above other elements */
+    
 }
 
 #mobile-menu.show {
@@ -183,4 +188,14 @@ color: #333;
 font-weight: 500;
 font-size: 16px;
 margin-left: 5px; /* Small space between label and value */
+}
+
+#notification-dot {
+    position: absolute;
+    top: -5px;
+    right: 0px;
+    width: 10px;
+    height: 10px;
+    background-color: red;
+    border-radius: 50%;
 }

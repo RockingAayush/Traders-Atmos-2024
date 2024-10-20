@@ -16,7 +16,7 @@ body{
     transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
     height: 100%; /* Set mobile menu height to 100% */
     width: 100%; /* Set mobile menu width to 70% */
-
+    opacity: 1 !important; 
 }
 
 #mobile-menu.show {
@@ -136,6 +136,7 @@ body{
 .navbar a:hover::after {
     width: 100%;
 }
+
 .values{
     padding-bottom: 24px;
 }

@@ -15,9 +15,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'dashboard/styles.css'%}">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="{% static 'js/jquery.min.js' %}"></script>  <!-- Include jQuery -->
     <title>Traders@BPHC</title>
+
 </head>
 
 <body>
@@ -58,7 +57,7 @@
             </div>
 
             <div id="mobile-menu"
-                class="md:hidden fixed inset-0 bg-black bg-opacity-100 text-#65B5EB text-2xl font-bold z-50 flex flex-col items-center justify-start pt-10 scale-0 transition-transform duration-500 ease-in-out">
+     class="md:hidden fixed inset-0 bg-black text-white text-2xl font-bold z-50 flex flex-col items-center justify-start pt-10 scale-0 transition-transform duration-500 ease-in-out">
                 <button id="close-menu-btn" class="absolute top-5 right-5 text-white focus:outline-none cursor-pointer">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                         xmlns="http://www.w3.org/2000/svg">
@@ -92,24 +91,6 @@
             </div>
         </nav>
     </section>
-
-    <section class="container mx-auto mt-4">
-        {% if messages %}
-            <div class="messages mb-4">
-                {% for message in messages %}
-                    <div class="p-4 mb-4 rounded-lg flex justify-between items-center bg-white shadow">
-                        <span class="{% if message.tags == 'error' %}text-red-500{% elif message.tags == 'success' %}text-green-500{% else %}text-blue-500{% endif %}">
-                            {{ message }}
-                        </span>
-                        <button class="ml-4 text-gray-600 font-bold focus:outline-none" onclick="this.parentElement.style.display='none'">×</button>
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-    </section>
-    
-    
-
     <section class="dashboard">
         <div class="values bg-white shadow-lg rounded-lg p-6 text-center mb-4">
             <div class="balance-section">
@@ -199,7 +180,6 @@
     </section>
 
     <script>
-
         // Select the necessary elements
         const menuBtn = document.getElementById('menu-btn');
         const closeMenuBtn = document.getElementById('close-menu-btn');

@@ -5,6 +5,7 @@ from django.dispatch import receiver
 from django.utils import timezone
 from django.contrib.sessions.models import Session
 
+
 import random , string
 from decimal import Decimal
 
@@ -136,6 +137,7 @@ def create_player(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=Player)
 def check_leaderboard(sender, instance, **kwargs):
+    
     # If the player's number of orders is 12 or more and they are not already in the leaderboard
     if instance.number_of_orders >= 12:
         # Calculate the player's net worth
@@ -144,6 +146,30 @@ def check_leaderboard(sender, instance, **kwargs):
         # Get or create a leaderboard entry
         leaderboard_entry, created = Leaderboard.objects.get_or_create(player=instance)
         
+        # Update the net worth in the leaderboard entry
+        leaderboard_entry.net_worth = net_worth
+        leaderboard_entry.save()
+
+@receiver(post_save, sender=Stock)
+def update_leaderboard_on_stock_change(sender, instance, **kwargs):
+    # Fetch all players to recalculate their net worth
+    players = Player.objects.all()
+    
+    # Loop through each player and update their net worth
+    for player in players:
+        update_leaderboard_for_player(player)        
+
+def update_leaderboard_for_player(player):
+    """
+    Update the leaderboard for the given player if they meet the criteria.
+    """
+    if player.number_of_orders >= 12:
+        # Calculate the player's net worth
+        net_worth = player.calculate_net_worth()
+
+        # Get or create a leaderboard entry
+        leaderboard_entry, created = Leaderboard.objects.get_or_create(player=player)
+
         # Update the net worth in the leaderboard entry
         leaderboard_entry.net_worth = net_worth
         leaderboard_entry.save()

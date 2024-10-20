@@ -9,6 +9,7 @@ from decimal import Decimal
 from django.urls import reverse
 from django.http import JsonResponse
 
+
 MINIMUM_TRANSACTIONS = 12
 
 # Login page
@@ -390,3 +391,12 @@ def maintenance_page(request):
 def leaderboard_view(request):
     leaderboard = Leaderboard.objects.all().order_by('-net_worth')  # Sort by net worth
     return render(request, 'leaderboard.html', {'leaderboard': leaderboard})
+
+
+#from django.views.decorators.http import require_http_methods
+
+#@require_http_methods(['GET'])
+#def check_pending_requests(request):
+#    player = request.user.player
+#    pending_requests = Transaction.objects.filter(receiver=player, status='PENDING').exists()
+#    return JsonResponse({'pending_requests': pending_requests})
