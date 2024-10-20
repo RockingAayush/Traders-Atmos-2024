@@ -91,6 +91,39 @@
             </div>
         </nav>
     </section>
+    
+    <section class="messages-container mx-auto px-4 py-2">
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            {% if message.tags == 'success' %}
+            <div class="alert success bg-green-200 border-l-4 border-green-500 text-green-700 p-4 mb-4 flex justify-between items-center" role="alert">
+                <div>
+                    <p class="font-bold">Success!</p>
+                    <p>{{ message }}</p>
+                </div>
+                <button class="text-sm font-semibold text-gray-700" onclick="this.parentElement.remove();">
+                    &#10006;
+                </button>
+            </div>
+            {% elif message.tags == 'error' %}
+            <div class="alert error bg-red-200 border-l-4 border-red-500 text-red-700 p-4 mb-4 flex justify-between items-center" role="alert">
+                <div>
+                    <p class="font-bold">Error!</p>
+                    <p>{{ message }}</p>
+                </div>
+                <button class="text-sm font-semibold text-gray-700" onclick="this.parentElement.remove();">
+                    &#10006;
+                </button>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
+    </section>
+    
+    
+
     <section class="dashboard">
         <div class="values bg-white shadow-lg rounded-lg p-6 text-center mb-4">
             <div class="balance-section">
