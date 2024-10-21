@@ -15,6 +15,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'dashboard/styles.css'%}">
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+    <!-- Include jQuery and Select2 JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
     <title>Traders@BPHC</title>
 
 </head>
@@ -146,7 +151,7 @@
                 <h1>STOCKS</h1>
             </div>
         </div>
-        <div class="list-container">
+        <div class="list-container list-none">
             <!-- List Item Template -->
             {% for stock in stocks %}
             <div class="list-item" id="stock-{{ forloop.counter }}">
@@ -218,12 +223,16 @@
                                 <span class="column">To</span>
                             </div>
                             <div class="row flex justify-between mt-2">
-                                <input type="number" name="quantity" class="column input w-1/3 p-2 border rounded"
-                                    placeholder="0" required>
-                                <input type="number" name="price" class="column input w-1/3 p-2 border rounded"
-                                    placeholder="0.00" step="0.01" required>
-                                <input type="text" name="recipient" class="column input w-1/3 p-2 border rounded"
-                                    placeholder="Recipient" required>
+                                <input type="number" name="quantity" class="column input w-1/3 p-2 border rounded" placeholder="0" required>
+                                <input type="number" name="price" class="column input w-1/3 p-2 border rounded" placeholder="0.00" step="0.01" required>
+                            
+                                <!-- Recipient input using Select2 -->
+                                <select name="recipient" id="recipient-select-{{ forloop.counter }}" class="column input w-full p-2 border rounded" required>
+                                    <option value="" disabled selected>Select Recipient</option>
+                                    {% for recipient in recipients %}
+                                        <option value="{{ recipient.user_code }}">{{ recipient.user_code }}</option>
+                                    {% endfor %}
+                                </select>
                             </div>
                             <div class="row mt-4">
                                 <button type="submit"
@@ -241,6 +250,14 @@
     </section>
 
     <script>
+                $(document).ready(function() {
+            $('[id^=recipient-select-]').each(function() {
+                $(this).select2({
+                    placeholder: 'Recipient',
+                    width: 'resolve'
+                });
+            });
+        });
         // Select the necessary elements
         const menuBtn = document.getElementById('menu-btn');
         const closeMenuBtn = document.getElementById('close-menu-btn');

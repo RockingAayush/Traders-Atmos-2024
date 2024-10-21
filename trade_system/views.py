@@ -32,7 +32,8 @@ def dashboard(request):
         return render(request, 'email_not_allowed.html')
     
     stocks = Stock.objects.all()  # Fetch all stocks from the Stock model
-
+    recipients = Player.objects.exclude(user=allowed_email)
+    print(recipients)
     if (MINIMUM_TRANSACTIONS - player.number_of_orders) < 0:
         minimum_remaining_orders = 0
     else:
@@ -40,6 +41,7 @@ def dashboard(request):
     
     context = {
         'player': player,
+        'recipients': recipients,
         'balance': player.balance,
         'number_of_orders': player.number_of_orders,
         'minimum_remaining_orders': minimum_remaining_orders,
