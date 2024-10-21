@@ -1,0 +1,299 @@
+{% load static %}
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'dashboard/styles.css'%}">
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+    <!-- Include jQuery and Select2 JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+    <title>Traders@BPHC</title>
+
+</head>
+
+<body>
+    <section>
+        <nav class="relative navbar">
+            <div class="max-w-7xl mx-auto px-4 flex items-center">
+                <div id="logo" class="flex-shrink-0">
+                    <a href="{% url 'dashboard' %}" class="text-white text-xl lg:text-2xl font-bold mr-3">{{ user_code }}</a>
+                </div>
+                <div class="flex-1">
+                    <div class="flex justify-between items-center py-5">
+                        <div class="md:hidden">
+                            <button id="menu-btn" class="text-white focus:outline-none cursor-pointer">
+                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 6h16M4 12h16M4 18h16"></path>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <ul id="menu"
+                            class="hidden md:flex space-x-10 text-white text-xl lg:text-2xl  font-bold justify-center w-full">
+                            <li><a href="{% url 'portfolio' %}" class="hover:text-white transition">PORTFOLIO</a></li>
+                            <li><a href="{% url 'transaction_history' %}" class="hover:text-white transition">HISTORY</a></li>
+                            <li><a href="{% url 'pending_requests' %}" class="hover:text-white transition">INCOMING REQUESTS</a></li>
+                            <li><a href="{% url 'news' %}" class="hover:text-white transition">LATEST NEWS</a></li>
+                            <li>
+                                <form action="{% url 'logout' %}" method="post">
+                                    {% csrf_token %}
+                                    <button class="hover:text-white transition" style="color: white; font-size: 1.5rem;"
+                                        type="submit">LOGOUT</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div id="mobile-menu"
+     class="md:hidden fixed inset-0 bg-black text-white text-2xl font-bold z-50 flex flex-col items-center justify-start pt-10 scale-0 transition-transform duration-500 ease-in-out">
+                <button id="close-menu-btn" class="absolute top-5 right-5 text-white focus:outline-none cursor-pointer">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
+                </button>
+
+                <ul class="w-full">
+
+                    <li class="first:mt-0 border-b border-white w-full text-center py-4">
+                        <a href="{% url 'portfolio' %}" class="hover:text-white transition">PORTFOLIO</a>
+                    </li>
+                    <li class="border-b border-white w-full text-center py-4">
+                        <a href="{% url 'transaction_history' %}" class="hover:text-white transition">HISTORY</a>
+                    </li>
+                    <li class="border-b border-white w-full text-center py-4">
+                        <a href="{% url 'pending_requests' %}" class="hover:text-white transition">INCOMING REQUESTS</a>
+                    </li>
+                    <li class="border-b border-white w-full text-center py-4"><a href="{% url 'news' %}"
+                        class="hover:text-white transition">LATEST NEWS</a></li>
+                    <li>
+                        <form action="{% url 'logout' %}" method="post">
+                            {% csrf_token %}
+                            <button class="hover:text-white transition" style="color: white; font-size: 1.25rem;"
+                                type="submit">LOGOUT</button>
+                        </form>
+                    </li>
+
+                </ul>
+            </div>
+        </nav>
+    </section>
+    
+    <section class="messages-container mx-auto px-4 py-2">
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            {% if message.tags == 'success' %}
+            <div class="alert success bg-green-200 border-l-4 border-green-500 text-green-700 p-4 mb-4 flex justify-between items-center" role="alert">
+                <div>
+                    <p class="font-bold">Success!</p>
+                    <p>{{ message }}</p>
+                </div>
+                <button class="text-sm font-semibold text-gray-700" onclick="this.parentElement.remove();">
+                    &#10006;
+                </button>
+            </div>
+            {% elif message.tags == 'error' %}
+            <div class="alert error bg-red-200 border-l-4 border-red-500 text-red-700 p-4 mb-4 flex justify-between items-center" role="alert">
+                <div>
+                    <p class="font-bold">Error!</p>
+                    <p>{{ message }}</p>
+                </div>
+                <button class="text-sm font-semibold text-gray-700" onclick="this.parentElement.remove();">
+                    &#10006;
+                </button>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
+    </section>
+    
+    
+
+    <section class="dashboard">
+        <div class="values bg-white shadow-lg rounded-lg p-6 text-center mb-4">
+            <div class="balance-section">
+                <h1 class="text-4xl text-gray-800 mb-2">BALANCE</h1>
+                <p class="text-3xl text-green-500 font-semibold">₹ {{ balance }}</p>
+            </div>
+            <div class="transaction-section mt-4">
+                <p id="rem_order" class="text-xl text-gray-600">
+                    {% if minimum_remaining_orders > 0 %}
+                        Transactions Remaining: <span class="font-bold">{{ minimum_remaining_orders }}</span>
+                    {% else %}
+                        Transactions Done: <span class="font-bold">{{ number_of_orders }}</span>
+                    {% endif %}
+                </p>
+            </div>
+            
+        </div>
+        <div class="stocks">
+            <div class="title">
+                <h1>STOCKS</h1>
+            </div>
+        </div>
+        <div class="list-container list-none">
+            <!-- List Item Template -->
+            {% for stock in stocks %}
+            <div class="list-item" id="stock-{{ forloop.counter }}">
+                <div class="list-info flex justify-between items-center p-4 bg-white shadow-md rounded-lg mb-4 hover:shadow-lg transition-shadow duration-200">
+                    <!-- Stock Details Container -->
+                    <div class="stock-details flex flex-col w-full">
+                        <!-- Stock Name -->
+                        <div class="stock-header flex justify-between items-center mb-2">
+                            <span class="name text-xl font-semibold text-gray-900">{{ stock.stock_name }}</span>
+                            <button class="dropdown-btn text-gray-500 hover:text-gray-700 focus:outline-none transition-colors duration-200" onclick="toggleCard('{{ forloop.counter }}')">
+                                &#9660;
+                            </button>
+                        </div>
+                
+                        <!-- Price Details and Stock Held (Side-by-Side) -->
+                        <div class="flex justify-between items-center">
+                            <!-- Price Details (Upper and Lower Cap) -->
+                            <div class="price-details text-sm text-gray-600">
+                                <div class="mb-1">
+                                    <span class="font-semibold">Upper Cap:</span>
+                                    <span class="text-green-600 ml-1">₹{{ stock.upper_cap }}</span>
+                                </div>
+                                <div>
+                                    <span class="font-semibold">Lower Cap:</span>
+                                    <span class="text-red-600 ml-1">₹{{ stock.lower_cap }}</span>
+                                </div>
+                            </div>
+                
+                            <!-- Stock Quantity Held -->
+                            <div class="stock-quantity text-right text-gray-700">
+                                <span class="font-semibold">Holdings:</span>
+                                <span class="text-blue-600 ml-1">
+                                    {% if forloop.counter == 1 %}{{ player.stock1 }}
+                                    {% elif forloop.counter == 2 %}{{ player.stock2 }}
+                                    {% elif forloop.counter == 3 %}{{ player.stock3 }}
+                                    {% elif forloop.counter == 4 %}{{ player.stock4 }}
+                                    {% elif forloop.counter == 5 %}{{ player.stock5 }}
+                                    {% elif forloop.counter == 6 %}{{ player.stock6 }}
+                                    {% elif forloop.counter == 7 %}{{ player.stock7 }}
+                                    {% elif forloop.counter == 8 %}{{ player.stock8 }}
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+
+                <div id="card-{{ forloop.counter }}" class="dropdown-card hidden mt-2">
+                    <form method="POST" action="{% url 'transaction_request' stock.id %}">
+                        {% csrf_token %}
+                        <div class="card-actions">
+                            <label class="toggle-label">
+                                <input type="radio" name="action-{{ forloop.counter }}" value="buy" class="toggle-input"
+                                    checked>
+                                <span class="toggle-option">BUY</span>
+                            </label>
+                            <label class="toggle-label">
+                                <input type="radio" name="action-{{ forloop.counter }}" value="sell"
+                                    class="toggle-input">
+                                <span class="toggle-option">SELL</span>
+                            </label>
+                        </div>
+
+                        <div class="card-details mt-4">
+                            <div class="row flex justify-between text-sm font-semibold">
+                                <span class="column">Qty</span>
+                                <span class="column">Price/Share</span>
+                                <span class="column">To</span>
+                            </div>
+                            <div class="row flex justify-between mt-2">
+                                <input type="number" name="quantity" class="column input w-1/3 p-2 border rounded" placeholder="0" required>
+                                <input type="number" name="price" class="column input w-1/3 p-2 border rounded" placeholder="0.00" step="0.01" required>
+                            
+                                <!-- Recipient input using Select2 -->
+                                <select name="recipient" id="recipient-select-{{ forloop.counter }}" class="column input w-full p-2 border rounded" required>
+                                    <option value="" disabled selected>Select Recipient</option>
+                                    {% for recipient in recipients %}
+                                        <option value="{{ recipient.user_code }}">{{ recipient.user_code }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="row mt-4">
+                                <button type="submit"
+                                    class="confirm-btn bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                                    Confirm
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        </div>
+    </section>
+
+    <script>
+                $(document).ready(function() {
+            $('[id^=recipient-select-]').each(function() {
+                $(this).select2({
+                    placeholder: 'Recipient',
+                    width: 'resolve'
+                });
+            });
+        });
+        // Select the necessary elements
+        const menuBtn = document.getElementById('menu-btn');
+        const closeMenuBtn = document.getElementById('close-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        // Toggle the mobile menu visibility
+        menuBtn.addEventListener('click', () => {
+            mobileMenu.classList.add('show');
+            menuBtn.classList.add('menu-btn-open');
+        });
+
+        // Close the mobile menu
+        closeMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.remove('show');
+            menuBtn.classList.remove('menu-btn-open');
+        });
+
+        // Optional: Close the menu when clicking outside of it
+        document.addEventListener('click', (event) => {
+            if (!mobileMenu.contains(event.target) && !menuBtn.contains(event.target)) {
+                mobileMenu.classList.remove('show');
+                menuBtn.classList.remove('menu-btn-open');
+            }
+        });
+
+        function toggleCard(id) {
+            const card = document.getElementById(`card-${id}`);
+            if (card.classList.contains('hidden')) {
+                card.classList.remove('hidden');
+                card.classList.add('visible');
+            } else {
+                card.classList.remove('visible');
+                card.classList.add('hidden');
+            }
+        }
+    </script>
+</body>
+
+</html>
