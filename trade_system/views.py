@@ -1,14 +1,16 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import Player,News,Stock,Transaction,SiteSetting,Leaderboard
+from .models import Player,News,Stock,Transaction,SiteSetting,Leaderboard,AllowedEmail
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.db.models import Q
 from decimal import Decimal
 from django.urls import reverse
 from django.http import JsonResponse
-
+from django.contrib.auth import logout
+from allauth.account.signals import user_logged_in
+from django.dispatch import receiver
 
 MINIMUM_TRANSACTIONS = 12
 
@@ -19,7 +21,16 @@ def login(request):
 # Dashboard
 @login_required(login_url='/login/')
 def dashboard(request):
-    player = Player.objects.get(user=request.user)
+    try:
+        # Get the AllowedEmail entry that matches the current user's email
+        allowed_email = AllowedEmail.objects.get(email=request.user.email)
+        
+        # Fetch the corresponding Player based on the allowed_email
+        player = Player.objects.get(user=allowed_email)
+    except AllowedEmail.DoesNotExist:
+        # If the user's email is not in the AllowedEmail list, redirect or show an error
+        return render(request, 'email_not_allowed.html')
+    
     stocks = Stock.objects.all()  # Fetch all stocks from the Stock model
 
     if (MINIMUM_TRANSACTIONS - player.number_of_orders) < 0:
@@ -28,7 +39,7 @@ def dashboard(request):
         minimum_remaining_orders = MINIMUM_TRANSACTIONS - player.number_of_orders   
     
     context = {
-        'username': request.user.username,
+        'player': player,
         'balance': player.balance,
         'number_of_orders': player.number_of_orders,
         'minimum_remaining_orders': minimum_remaining_orders,
@@ -37,36 +48,47 @@ def dashboard(request):
     }
     return render(request, 'dashboard.html', context)
 
-# News page
+# News
 @login_required(login_url='/login/')
 def news_page(request):
-    player = Player.objects.get(user=request.user)
+    # Get the allowed email from the user
+    allowed_email = AllowedEmail.objects.get(email=request.user.email)
+    # Retrieve the Player instance using the allowed email
+    player = Player.objects.get(user=allowed_email)
+    # Fetch all news ordered by time
     news = News.objects.all().order_by('-time')
     context = {
         'news': news,
         'user_code': player.user_code,
-        }  
+    }  
     return render(request, 'news.html', context)
 
+
 # Display pending requests page
-@login_required
+@login_required(login_url='/login/')
 def pending_requests(request):
     """View to show all pending requests for the logged-in receiver."""
-    player = Player.objects.get(user=request.user)
-    user = request.user.player
-    pending_transactions = Transaction.objects.filter(receiver=user, status='PENDING')
+    # Get the allowed email from the user
+    allowed_email = AllowedEmail.objects.get(email=request.user.email)
+    # Retrieve the Player instance using the allowed email
+    player = get_object_or_404(Player, user=allowed_email)
+    
+    # Fetch the pending transactions for the logged-in user
+    pending_transactions = Transaction.objects.filter(receiver=player, status='PENDING')
 
     return render(request, 'pending_requests.html', {
         'user_code': player.user_code,
         'pending_transactions': pending_transactions
     })
 
+
 # Transaction sending mechanism and form validation
 @login_required(login_url='/login/')
 def transaction_request(request, stock_id):
     if request.method == 'POST':
         # Sender is the logged-in user (use `user_code` from the related `Player` model)
-        sender = Player.objects.get(user=request.user)
+        allowed_email = AllowedEmail.objects.get(email=request.user.email)
+        sender = Player.objects.get(user=allowed_email)
         sender_code = sender.user_code  # Get the `user_code` of the sender
 
         # Get the recipient (receiver) based on the `user_code` from the form input
@@ -137,21 +159,39 @@ def transaction_request(request, stock_id):
         return redirect('dashboard')
 
 # Accepting a request
+@login_required(login_url='/login/')
 def accept_transaction(request, transaction_id):
-    transaction = get_object_or_404(Transaction, id=transaction_id, receiver=request.user.player)
+    # Ensure the logged-in user's email is allowed
+    try:
+        allowed_email = AllowedEmail.objects.get(email=request.user.email)
+    except AllowedEmail.DoesNotExist:
+        messages.error(request, "Your email is not authorized to perform transactions.")
+        return redirect('pending_requests')
 
+    # Ensure the player associated with the allowed email exists
+    try:
+        receiver = Player.objects.get(user=allowed_email)
+    except Player.DoesNotExist:
+        messages.error(request, "Player associated with your email does not exist.")
+        return redirect('pending_requests')
+
+    # Get the transaction and verify the receiver is the correct one
+    transaction = get_object_or_404(Transaction, id=transaction_id, receiver=receiver)
+
+    # Check if the transaction is still pending
     if transaction.status != 'PENDING':
         messages.error(request, "Transaction is no longer pending.")
         return redirect('pending_requests')
 
+    # Extract transaction details
     sender = transaction.sender
-    receiver = transaction.receiver
     stock = transaction.stock
     action = transaction.action
     quantity = transaction.quantity
     price = transaction.price
 
-    # Final Validation - Check if the sender and receiver meet the requirements
+    print(sender)
+    # Final validation - Check if sender and receiver meet the transaction requirements
     if action == 'BUY':
         total_cost = price * quantity
         # Check if the sender (BUYER) has enough balance
@@ -160,7 +200,7 @@ def accept_transaction(request, transaction_id):
             transaction.delete()  # Delete invalid transaction
             return redirect('pending_requests')
 
-        # Check if the receiver has enough of the stock to sell
+        # Check if the receiver (SELLER) has enough stock to sell
         receiver_stock_qty = getattr(receiver, f'stock{stock.id}', 0)
         if receiver_stock_qty < quantity:
             messages.error(request, "Invalid transaction: receiver does not have enough quantity of the stock to sell.")
@@ -168,7 +208,7 @@ def accept_transaction(request, transaction_id):
             return redirect('pending_requests')
 
     elif action == 'SELL':
-        # Check if the sender (SELLER) has enough of the stock to sell
+        # Check if the sender (SELLER) has enough stock to sell
         sender_stock_qty = getattr(sender, f'stock{stock.id}', 0)
         if sender_stock_qty < quantity:
             messages.error(request, "Invalid transaction: sender does not have enough quantity of the stock to sell.")
@@ -186,13 +226,15 @@ def accept_transaction(request, transaction_id):
     transaction.status = 'ACCEPTED'
     transaction.accepted_at = timezone.now()
     transaction.save()
-    
+
+    # Update the number of orders for both the sender and receiver
     sender.number_of_orders += 1
     receiver.number_of_orders += 1
 
     # Save the updated player models
     sender.save()
     receiver.save()
+
     # Update the balances and stock quantities for both the sender and receiver
     update_balances_and_stocks(transaction)
 
@@ -200,10 +242,12 @@ def accept_transaction(request, transaction_id):
     return redirect('pending_requests')
 
 # Rejecting a request
-@login_required
+@login_required(login_url='/login/')
 def reject_transaction(request, transaction_id):
     """Reject and delete the transaction."""
-    transaction = get_object_or_404(Transaction, id=transaction_id, receiver=request.user.player)
+    allowed_email = get_object_or_404(AllowedEmail, email=request.user.email)
+    receiver = get_object_or_404(Player, user=allowed_email)
+    transaction = get_object_or_404(Transaction, id=transaction_id, receiver=receiver)
 
     if transaction.status == 'PENDING':
         transaction.delete()
@@ -262,7 +306,8 @@ def update_balances_and_stocks(transaction):
 @login_required(login_url='/login/')
 def transaction_history(request):
     """Show transaction history for the logged-in user."""
-    player = request.user.player
+    allowed_email = AllowedEmail.objects.get(email=request.user.email)
+    player = Player.objects.get(user=allowed_email)
     
     # Fetch all transactions where the user is the sender or receiver
     transactions = Transaction.objects.filter(
@@ -278,7 +323,9 @@ def transaction_history(request):
 # Portfolio
 @login_required(login_url='/login/')
 def portfolio(request):
-    user = request.user.player
+    allowed_email = AllowedEmail.objects.get(email=request.user.email)    
+    # Fetch the corresponding Player based on the allowed_email
+    user = Player.objects.get(user=allowed_email)
 
     # List of stocks (assuming you have a Stock model with these stocks)
     stocks = Stock.objects.filter(id__in=range(1, 9))  # Fetch stocks with ids 1 to 8
@@ -334,7 +381,10 @@ def portfolio(request):
 # Portfolio data fetcher
 @login_required(login_url='/login/')
 def portfolio_data(request):
-    user = request.user.player
+    allowed_email = AllowedEmail.objects.get(email=request.user.email)    
+    # Fetch the corresponding Player based on the allowed_email
+    user = Player.objects.get(user=allowed_email)
+    
     stocks = Stock.objects.filter(id__in=range(1, 9))  # Assuming Stock model has these stocks
 
     stocks_held = []
@@ -392,9 +442,19 @@ def leaderboard_view(request):
     leaderboard = Leaderboard.objects.all().order_by('-net_worth')  # Sort by net worth
     return render(request, 'leaderboard.html', {'leaderboard': leaderboard})
 
-
+# Allowed emails
+@receiver(user_logged_in)
+def check_allowed_email(sender, request, user, **kwargs):
+    # Check if the user's email is in the allowed list
+    if not AllowedEmail.objects.filter(email=user.email).exists():
+        # Log out the user if their email is not in the allowed list
+        logout(request)
+        # Redirect them to an error page or show a message
+        return redirect(reverse('email_not_allowed'))
 #from django.views.decorators.http import require_http_methods
 
+def email_not_allowed(request):
+    return render(request, 'email_not_allowed.html', {'message': 'Your email address is not allowed.'})
 #@require_http_methods(['GET'])
 #def check_pending_requests(request):
 #    player = request.user.player

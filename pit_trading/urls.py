@@ -48,4 +48,7 @@ urlpatterns = [
 
     # URL for maintenance page
     path('maintenance/', views.maintenance_page, name='maintenance_page'),
+
+    # URL to check allowed users
+    path('email-not-allowed/', views.email_not_allowed, name='email_not_allowed'),
 ]

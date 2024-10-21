@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Player, News, Stock, Transaction, SiteSetting, Leaderboard
+from .models import Player, News, Stock, Transaction, SiteSetting, Leaderboard, AllowedEmail
 from django.contrib import messages
 from django.utils.translation import gettext_lazy as _
 
@@ -8,6 +8,7 @@ admin.site.register(Player)
 admin.site.register(News)
 admin.site.register(Stock)
 admin.site.register(Transaction)
+admin.site.register(AllowedEmail)
 
 @admin.register(SiteSetting)
 class SiteSettingAdmin(admin.ModelAdmin):

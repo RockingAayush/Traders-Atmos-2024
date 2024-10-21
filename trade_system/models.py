@@ -5,15 +5,22 @@ from django.dispatch import receiver
 from django.utils import timezone
 from django.contrib.sessions.models import Session
 
-
 import random , string
 from decimal import Decimal
 
 UPPER_LOWER_CAP_PERCENTAGE = 0.2
 
+# Allowed Users Table
+class AllowedEmail(models.Model):
+    email = models.EmailField(unique=True)
+    name = models.CharField(max_length=100)  # Add a name field to store the user's name
+
+    def __str__(self):
+        return self.email
+
 # Table with Player Info
 class Player(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)  # Link to the User model
+    user = models.OneToOneField(AllowedEmail, on_delete=models.CASCADE)  # Link to the User model
     balance = models.DecimalField(default=20000, max_digits=10, decimal_places=2)
     number_of_orders = models.PositiveIntegerField(default=0)
     stock1 = models.PositiveIntegerField(default=0)
@@ -114,7 +121,6 @@ class Leaderboard(models.Model):
         return f"{self.player.user_code} - {self.net_worth}"
     
 
-
 def generate_user_code(first_name):
     initials = ''.join([name[0] for name in first_name.split() if name]).upper()
     
@@ -127,12 +133,12 @@ def generate_user_code(first_name):
         if not Player.objects.filter(user_code=user_code).exists():
             return user_code
 
-@receiver(post_save, sender=User)
-def create_player(sender, instance, created, **kwargs):
-    if created:
-        first_name = instance.first_name
-        user_code = generate_user_code(first_name)
-        Player.objects.create(user=instance, user_code=user_code)
+#@receiver(post_save, sender=User)
+#def create_player(sender, instance, created, **kwargs):
+#    if created:
+#        first_name = instance.first_name
+#        user_code = generate_user_code(first_name)
+#        Player.objects.create(user=instance, user_code=user_code)
 
 
 @receiver(post_save, sender=Player)
