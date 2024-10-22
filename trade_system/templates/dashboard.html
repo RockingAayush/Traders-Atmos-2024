@@ -21,7 +21,54 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
     <title>Traders@BPHC</title>
+    <style>
+        .toggle-label {
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        .toggle-input {
+            display: none; /* Hide the radio buttons */
+        }
+        .toggle-option {
+            padding: 10px 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f0f0f0;
+        }
+        .toggle-input:checked + .toggle-option {
+            background-color: #4caf50; /* Default for BUY */
+        }
+        .toggle-input[value="sell"]:checked + .toggle-option {
+            background-color: #ff0015; /* Red for SELL */
+            border-color: #f5c6cb; /* Border color for SELL */
+        }
+        .card-details {
+            width: 100%; /* Set the width of the card */
+        }
 
+        .row {
+            display: flex; /* Use Flexbox for layout */
+            align-items: center; /* Vertically center items */
+        }
+
+        .column {
+            flex: 1; /* Distribute space evenly */
+            margin-right: 10px; /* Add spacing between columns */
+        }
+
+        .column:last-child {
+            margin-right: 0; /* Remove margin from the last column */
+        }
+
+        .input {
+            width: 100%; /* Ensure inputs take full width of the column */
+        }
+
+        /* Optional: Adjust input height for better visual alignment */
+        .input {
+            height: 40px; /* Set a uniform height for inputs */
+        }
+    </style>
 </head>
 
 <body>
@@ -216,27 +263,25 @@
                             </label>
                         </div>
 
-                        <div class="card-details mt-4">
-                            <div class="row flex justify-between text-sm font-semibold">
-                                <span class="column">Qty</span>
-                                <span class="column">Price/Share</span>
-                                <span class="column">To</span>
+                        <div class="card-details mt-4 p-2">
+                            <div class="grid grid-cols-3 gap-4 text-sm font-semibold text-center">
+                                <span>Qty</span>
+                                <span>Price/Share</span>
+                                <span>To</span>
                             </div>
-                            <div class="row flex justify-between mt-2">
-                                <input type="number" name="quantity" class="column input w-1/3 p-2 border rounded" placeholder="0" required>
-                                <input type="number" name="price" class="column input w-1/3 p-2 border rounded" placeholder="0.00" step="0.01" required>
-                            
+                            <div class="grid grid-cols-3 gap-4 mt-2">
+                                <input type="number" name="quantity" class="input w-full p-2 border rounded" placeholder="0" required>
+                                <input type="number" name="price" class="input w-full p-2 border rounded" placeholder="0.00" step="0.01" required>
                                 <!-- Recipient input using Select2 -->
-                                <select name="recipient" id="recipient-select-{{ forloop.counter }}" class="column input w-full p-2 border rounded" required>
+                                <select name="recipient" id="recipient-select-{{ forloop.counter }}" class="input w-full p-2 border rounded" style="padding-top: 0.5rem; padding-bottom: 0.5rem;" required>
                                     <option value="" disabled selected>Select Recipient</option>
                                     {% for recipient in recipients %}
                                         <option value="{{ recipient.user_code }}">{{ recipient.user_code }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
-                            <div class="row mt-4">
-                                <button type="submit"
-                                    class="confirm-btn bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                            <div class="mt-4">
+                                <button type="submit" class="confirm-btn bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
                                     Confirm
                                 </button>
                             </div>
@@ -253,7 +298,7 @@
                 $(document).ready(function() {
             $('[id^=recipient-select-]').each(function() {
                 $(this).select2({
-                    placeholder: 'Recipient',
+                    placeholder: 'Code',
                     width: 'resolve'
                 });
             });
