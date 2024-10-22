@@ -192,7 +192,6 @@ def accept_transaction(request, transaction_id):
     quantity = transaction.quantity
     price = transaction.price
 
-    print(sender)
     # Final validation - Check if sender and receiver meet the transaction requirements
     if action == 'BUY':
         total_cost = price * quantity
@@ -453,12 +452,6 @@ def check_allowed_email(sender, request, user, **kwargs):
         logout(request)
         # Redirect them to an error page or show a message
         return redirect(reverse('email_not_allowed'))
-#from django.views.decorators.http import require_http_methods
 
 def email_not_allowed(request):
     return render(request, 'email_not_allowed.html', {'message': 'Your email address is not allowed.'})
-#@require_http_methods(['GET'])
-#def check_pending_requests(request):
-#    player = request.user.player
-#    pending_requests = Transaction.objects.filter(receiver=player, status='PENDING').exists()
-#    return JsonResponse({'pending_requests': pending_requests})
