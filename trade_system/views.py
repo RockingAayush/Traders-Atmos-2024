@@ -13,6 +13,7 @@ from allauth.account.signals import user_logged_in
 from django.dispatch import receiver
 
 MINIMUM_TRANSACTIONS = 12
+BROKERAGE_FACTOR = 0.005
 
 # Login page
 def login(request):
@@ -264,6 +265,9 @@ def update_balances_and_stocks(transaction):
     quantity = transaction.quantity
     price = transaction.price
     total_cost = price * quantity
+    brokerage = total_cost * Decimal(BROKERAGE_FACTOR)
+
+    total_cost = total_cost - brokerage
 
     if transaction.action == 'BUY':
         # Deduct the total cost from the sender's balance
@@ -455,3 +459,6 @@ def check_allowed_email(sender, request, user, **kwargs):
 
 def email_not_allowed(request):
     return render(request, 'email_not_allowed.html', {'message': 'Your email address is not allowed.'})
+
+def credits(request):
+    return render(request,'credits.html')
