@@ -1,31 +1,132 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Maintenance Mode</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>We'll be back soon!</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #333;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
             text-align: center;
-            padding: 50px;
         }
         .content {
-            margin: auto;
-            width: 50%;
-            padding: 20px;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+            transition: transform 0.3s ease;
+        }
+        .content:hover {
+            transform: scale(1.05);
         }
         h1 {
-            font-size: 50px;
+            font-size: 36px;
+            margin-bottom: 20px;
+            color: #2c3e50;
         }
         p {
-            font-size: 20px;
+            font-size: 16px;
+            margin-bottom: 30px;
+            color: #7f8c8d;
+        }
+        .fact-box {
+            font-size: 15px;
+            font-style: italic;
+            color: #34495e;
+            background-color: #ecf0f1;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: inset 0px 0px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            animation: fadeInOut 10s infinite;
+            opacity: 0;
+        }
+        .hidden-link {
+            color: #2980b9;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .hidden-link:hover {
+            text-decoration: underline;
+            color: #1abc9c;
+        }
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0; }
+            10%, 90% { opacity: 1; }
+        }
+        /* Mobile responsiveness */
+        @media (max-width: 600px) {
+            .content {
+                padding: 20px;
+                max-width: 100%;
+            }
+            h1 {
+                font-size: 28px;
+            }
+            p {
+                font-size: 14px;
+            }
+            .fact-box {
+                font-size: 14px;
+            }
         }
     </style>
-    
+    <!-- Google Fonts for better font styling -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
+
     <div class="content">
         <h1>We'll be back soon!</h1>
-        <p>Sorry for the inconvenience, but we're performing some maintenance at the moment. Please check back later.</p>
+        <p>We are updating the stock prices based on the transactions done in this day.</p> 
+        <hr>
+        <p>In the meantime, enjoy some interesting trading facts:</p>
+        
+        <!-- Rotating facts -->
+        <div class="fact-box" id="fact-box">
+            <!-- Facts will be dynamically inserted here -->
+        </div>
     </div>
+
+    <script>
+        // Array of trading facts
+        const facts = [
+            "Did you know? The first stock exchange was established in Amsterdam in 1602 by the Dutch East India Company.",
+            "The largest stock exchange in the world by market capitalization is the New York Stock Exchange (NYSE).",
+            "Warren Buffet made his first stock purchase at age 11, buying shares of Cities Service for $38 per share.",
+            "The term 'bull market' describes a period of rising stock prices, while a 'bear market' indicates falling prices.",
+            "In 2010, a flash crash wiped out nearly $1 trillion in stock market value in just minutes.",
+            "The S&P 500 index represents the performance of 500 of the largest companies listed on stock exchanges in the U.S.",
+            "One of the largest IPOs in history was Alibaba, which raised $25 billion in 2014.",
+            "Hidden Secret: <a href='https://youtu.be/BLeOcCeqsfI?si=htzFvMDnZHVRoxXW' class='hidden-link'>Click here for a mystery surprise</a>"
+        ];
+
+        let factIndex = 0;
+
+        function showNextFact() {
+            // Get the fact-box element
+            const factBox = document.getElementById("fact-box");
+            // Update the content of the fact-box with the current fact
+            factBox.innerHTML = facts[factIndex];
+            // Update factIndex to show the next fact
+            factIndex = (factIndex + 1) % facts.length;
+        }
+
+        // Call showNextFact every 10 seconds to rotate facts
+        setInterval(showNextFact, 10000);
+
+        // Show the first fact immediately when the page loads
+        window.onload = showNextFact;
+    </script>
+
 </body>
 </html>
