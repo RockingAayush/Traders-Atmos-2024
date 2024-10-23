@@ -101,7 +101,7 @@ def transaction_request(request, stock_id):
         if sender_code == recipient_code:
             messages.error(request,"Invalid Recipient Code")
             return redirect('dashboard')
-        
+
         try:
             recipient = Player.objects.get(user_code=recipient_code)
         except Player.DoesNotExist:
@@ -119,6 +119,12 @@ def transaction_request(request, stock_id):
             messages.error(request,"Quantity cannot be negative.")
             return redirect('dashboard')
         
+        # Check if the pair already did 5 transactions
+        transaction_count = Transaction.objects.filter((Q(sender=sender, receiver=recipient) | Q(sender=recipient, receiver=sender))).count()
+        if transaction_count >= 5:
+            messages.error(request,"You have already made 5 transactions with this user.")
+            return redirect('dashboard')
+            
         # Fetch the stock being traded
         stock = get_object_or_404(Stock, id=stock_id)
 
