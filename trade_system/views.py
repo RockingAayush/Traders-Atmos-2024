@@ -465,6 +465,3 @@ def check_allowed_email(sender, request, user, **kwargs):
 
 def email_not_allowed(request):
     return render(request, 'email_not_allowed.html', {'message': 'Your email address is not allowed.'})
-
-def credits(request):
-    return render(request,'credits.html')
