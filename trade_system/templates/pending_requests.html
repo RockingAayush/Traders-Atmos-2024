@@ -8,9 +8,275 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="{% static 'dashboard/styles.css'%}">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <title>Requests - Traders@BPHC</title>
+    <style>
+        body{
+            background: #ffffff;
+            font-family: 'Poppins',sans-serif;
+        }
+        .navbar {
+            padding: 5px;
+            background: #000;
+        }
+
+        .navbar ul {
+            position: relative;
+        }
+
+        #mobile-menu {
+            transform: translateX(-100%);
+            transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
+            height: 100%; /* Set mobile menu height to 100% */
+            width: 100%; /* Set mobile menu width to 70% */
+            opacity: 1 !important; 
+        }
+
+        #mobile-menu.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        #menu-btn {
+            position: relative;
+            animation: glow 1.5s infinite alternate;
+            transition: transform 0.5s ease;
+            cursor: pointer; /* Make hamburger icon clickable */
+        }
+
+        .menu-btn-open {
+            transform: rotate(90deg);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .spin {
+            animation: spin 0.5s ease-out;
+        }
+
+
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(90deg);
+            }
+        }
+
+        .navbar a {
+            position: relative;
+            color: #ffffff;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .navbar li {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .navbar li::before {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(to right, #65B5EB, transparent);
+            top: 50%;
+            left: -100%;
+            transition: left 0.4s;
+        }
+
+        .navbar li:hover::before {
+            left: 100%;
+        }
+
+        #mobile-menu ul {
+            width: 100%;
+            text-align: center;
+        }
+
+        #mobile-menu li {
+            padding: 10px 0; /* Adjust padding for better spacing */
+            font-size: 1.25rem; /* Adjust font size for mobile (~20px) */
+        }
+
+        #mobile-menu li a {
+            font-size: 1.25rem; /* Match link font size with list items */
+        }
+
+        @media (max-width: 768px) {
+            #mobile-menu {
+                width: 100%; /* Menu stays at 70% width on smaller screens */
+                right: 15%;
+            }
+
+            #mobile-menu li {
+                font-size: 1rem; /* Reduce font size slightly on smaller screens */
+            }
+
+            #logo {
+                order: 2; /* Move logo to the end in mobile view */
+                position: absolute;
+                top: 15px;
+                right: 0;
+                width: auto; /* Adjust width as needed */
+            }
+        }
+
+        @media screen and (max-width: 425px) {
+            #logo {
+                height: auto; /* Maintain aspect ratio */
+            }
+            #mobile-menu {
+                font-size: 12px;
+            }
+        }
+
+
+        .navbar a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -3px;
+            left: 0;
+            background-color: #65B5EB;
+            transition: width 0.3s ease;
+        }
+
+        .navbar a:hover::after {
+            width: 100%;
+        }
+
+        .values{
+            padding-bottom: 24px;
+        }
+        .title{
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+        .list-container {
+        width: 100%;
+        margin: 20px auto;
+        }
+
+        .list-item {
+        border: 1px solid #ddd;
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 5px;
+        position: relative;
+        }
+
+        .list-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        }
+
+        .name, .price {
+        font-size: 18px;
+        }
+
+        .dropdown-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 18px;
+        }
+
+        .dropdown-card {
+        margin-top: 10px;
+        padding: 15px;
+        background-color: #f9f9f9;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+        display: none; /* Hidden by default */
+        }
+
+        .hidden {
+        display: none;
+        }
+
+        .visible {
+        display: block;
+        }
+
+        /* Buttons inside the card */
+        .card-actions {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin-bottom: 15px;
+        }
+
+        .buy-btn {
+        background-color: green;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        }
+
+        .sell-btn {
+        background-color: red;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        }
+
+        .buy-btn:hover, .sell-btn:hover {
+        opacity: 0.8;
+        }
+
+        /* Rows for Qty, Price, To */
+        .card-details {
+        margin: 15px 0;
+        }
+
+        .row {
+        display: flex;
+        justify-content: space-between;
+        margin: 10px 0;
+        }
+
+        .column {
+        width: 100%;
+        text-align: center;
+        font-size: 16px;
+        }
+
+        .input {
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        width: 30%;
+        text-align: center;
+        }
+
+        .confirm-btn {
+        background-color: #333;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-left: 0;
+        }
+
+        .confirm-btn:hover {
+        background-color: #444;
+        }
+        .dashboard{
+        width: 100%;
+        padding: 12px;
+        }
+    </style>
 </head>
 
 <body>
