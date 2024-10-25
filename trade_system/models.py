@@ -120,6 +120,8 @@ class Leaderboard(models.Model):
     def __str__(self):
         return f"{self.player.user_code} - {self.net_worth}"
     
+    class Meta:
+        ordering = ['-net_worth']
 
 def generate_user_code(first_name):
     initials = ''.join([name[0] for name in first_name.split() if name]).upper()

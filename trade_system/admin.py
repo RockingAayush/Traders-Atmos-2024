@@ -7,7 +7,7 @@ from django.utils.translation import gettext_lazy as _
 admin.site.register(Player)
 admin.site.register(News)
 admin.site.register(Stock)
-admin.site.register(Transaction)
+
 admin.site.register(AllowedEmail)
 
 @admin.register(SiteSetting)
@@ -24,4 +24,33 @@ class SiteSettingAdmin(admin.ModelAdmin):
 @admin.register(Leaderboard)
 class LeaderboardAdmin(admin.ModelAdmin):
     list_display = ['player', 'net_worth', 'added_on']
-    search_fields = ['player__user__username']    
+    search_fields = ['player__user__username']
+
+
+
+class UserCodeFilter(admin.SimpleListFilter):
+    title = 'User Code'
+    parameter_name = 'user_code'
+
+    def lookups(self, request, model_admin):
+        # Get unique user codes for the filter dropdown in admin
+        user_codes = Player.objects.values_list('user_code', flat=True).distinct()
+        return [(user_code, user_code) for user_code in user_codes]
+
+    def queryset(self, request, queryset):
+        # Filter transactions by user code
+        if self.value():
+            # Find the player with the entered user code
+            try:
+                player = Player.objects.get(user_code=self.value())
+                # Filter transactions where the player is either sender or receiver
+                return queryset.filter(sender=player) | queryset.filter(receiver=player)
+            except Player.DoesNotExist:
+                return queryset.none()
+        return queryset
+
+class TransactionAdmin(admin.ModelAdmin):
+    list_display = ('sender', 'receiver', 'stock', 'price', 'quantity', 'action', 'status', 'timestamp')
+    list_filter = (UserCodeFilter,)
+
+admin.site.register(Transaction,TransactionAdmin)    

@@ -34,7 +34,7 @@ def dashboard(request):
     
     stocks = Stock.objects.all()  # Fetch all stocks from the Stock model
     recipients = Player.objects.exclude(user=allowed_email)
-    print(recipients)
+    
     if (MINIMUM_TRANSACTIONS - player.number_of_orders) < 0:
         minimum_remaining_orders = 0
     else:
