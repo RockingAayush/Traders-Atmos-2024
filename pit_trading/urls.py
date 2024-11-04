@@ -51,4 +51,7 @@ urlpatterns = [
 
     # URL to check allowed users
     path('email-not-allowed/', views.email_not_allowed, name='email_not_allowed'),
+
+    # URL to update LTP
+    path('ltp/', views.ltp_view, name='ltp_view'),
 ]

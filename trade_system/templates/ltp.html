@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Last Traded Prices</title>
+</head>
+<body>
+    <h1>Last Traded Prices</h1>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Stock Name</th>
+                <th>Last Traded Price (LTP)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for stock_name, ltp in ltp_data.items %}
+                <tr>
+                    <td>{{ stock_name }}</td>
+                    <td>{{ ltp }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <form method="get" action="{% url 'ltp_view' %}">
+        <button type="submit">Refresh LTP</button>
+    </form>
+</body>
+</html>

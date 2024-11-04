@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required,user_passes_test
 from django.contrib import messages
 from .models import Player,News,Stock,Transaction,SiteSetting,Leaderboard,AllowedEmail
 from django.shortcuts import get_object_or_404
@@ -11,9 +11,13 @@ from django.http import JsonResponse
 from django.contrib.auth import logout
 from allauth.account.signals import user_logged_in
 from django.dispatch import receiver
+import numpy as np
+from collections import deque
+import datetime
 
 MINIMUM_TRANSACTIONS = 12
 BROKERAGE_FACTOR = 0.005
+NUMBER_OF_TRANSACTIONS_FOR_LTP = 10
 
 # Login page
 def login(request):
@@ -22,6 +26,9 @@ def login(request):
 # Dashboard
 @login_required(login_url='/login/')
 def dashboard(request):
+    if request.user.is_staff:
+        return render(request,'ltp.html')
+    
     try:
         # Get the AllowedEmail entry that matches the current user's email
         allowed_email = AllowedEmail.objects.get(email=request.user.email)
@@ -465,3 +472,48 @@ def check_allowed_email(sender, request, user, **kwargs):
 
 def email_not_allowed(request):
     return render(request, 'email_not_allowed.html', {'message': 'Your email address is not allowed.'})
+
+
+
+def calculate_ltp(transactions):
+    prices = np.array([float(t.price) for t in transactions])
+    quantities = np.array([t.quantity for t in transactions])
+
+    if len(prices) == 0:
+        return None  # No transactions, return None or 0 as desired
+
+    Q1 = np.percentile(prices, 25)
+    Q3 = np.percentile(prices, 75)
+    IQR = Q3 - Q1
+    lower_bound = Q1 - 1.5 * IQR
+    upper_bound = Q3 + 1.5 * IQR
+
+    # Filter prices and quantities within IQR bounds
+    mask = (prices >= lower_bound) & (prices <= upper_bound)
+    filtered_prices = prices[mask]
+    filtered_quantities = quantities[mask]
+
+    if filtered_quantities.sum() == 0:
+        return np.mean(prices)  # Fallback if no valid prices remain
+
+    # Calculate weighted average
+    weighted_avg = np.average(filtered_prices, weights=filtered_quantities)
+    return round(weighted_avg, 2)
+
+# View to render LTP page
+@user_passes_test(lambda u: u.is_staff)
+def ltp_view(request):
+    stocks = Stock.objects.all()
+    ltp_data = {}
+
+    for stock in stocks:
+        # Fetch last 10 accepted transactions for each stock
+        transactions = Transaction.objects.filter(
+            stock=stock, status='ACCEPTED'
+        ).order_by('-timestamp')[:NUMBER_OF_TRANSACTIONS_FOR_LTP]
+        
+        ltp = calculate_ltp(transactions)
+        ltp_data[stock.stock_name] = ltp if ltp is not None else "No data"
+
+    context = {'ltp_data': ltp_data}
+    return render(request, 'ltp.html', context)
